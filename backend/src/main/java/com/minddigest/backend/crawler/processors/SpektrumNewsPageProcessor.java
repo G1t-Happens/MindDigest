@@ -1,4 +1,4 @@
-package com.minddigest.backend.crawler;
+package com.minddigest.backend.crawler.processors;
 
 import com.minddigest.backend.dto.DigestEntryDto;
 import com.minddigest.backend.crawler.interfaces.CrawlerComponent;
