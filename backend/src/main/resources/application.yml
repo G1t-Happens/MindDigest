@@ -1,0 +1,36 @@
+# Server configuration
+server:
+  port: 8089                # Server Port
+
+# Spring framework related configuration
+spring:
+  application:
+    name: backend
+
+  # Datasource configuration for database connection
+  datasource:
+    url: ${DB_URL}           # Database URL from environment variable
+    username: ${DB_USER}     # Database username from environment variable
+    password: ${DB_PASSWORD} # Database password from environment variable
+
+    hikari: # Connection pool settings using HikariCP (default in Spring Boot)
+      maximum-pool-size: 10  # Max number of connections in the pool
+      minimum-idle: 5        # Minimum idle connections in the pool
+
+  # JPA / Hibernate settings
+  jpa:
+    hibernate:
+      ddl-auto: update       # Automatically update the schema (use with caution in production)
+    show-sql: false          # Disable SQL logging in production (set true for debugging)
+    open-in-view: false      # Disable Open Session in a View pattern (recommended for performance)
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC     # Set JDBC timezone to UTC for consistency
+
+crawler:
+  threads: 4
+  sites:
+    - name: Spektrum
+      domain: spektrum.de
+      startUrl: https://www.spektrum.de/news
