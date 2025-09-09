@@ -1,8 +1,8 @@
 # 🧠 MindDigest
 
 **AI-powered multilingual news summarizer and archiver**  
-MindDigest is a web application that automatically crawls research and news websites, summarizes the content using a *
-*Large Language Model (LLM)**, categorizes it (e.g., Tech, Health, Politics), and translates articles into English (if
+MindDigest is a web application that automatically crawls research and news websites, summarizes the content using a 
+**Large Language Model (LLM)**, categorizes it (e.g., Tech, Health, Politics), and translates articles into English (if
 needed). The processed articles are then stored in a database and can be filtered and browsed through a modern frontend
 interface.
 
