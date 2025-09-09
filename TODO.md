@@ -7,3 +7,4 @@
 - Handle the processing results and update the articles accordingly.
 - Labeling based on (LLM) processing
 - And much more...
+- Frontend
