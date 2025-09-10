@@ -6,6 +6,7 @@ import org.hibernate.proxy.HibernateProxy;
 import java.io.Serial;
 import java.util.Objects;
 
+
 /**
  * Entity representing a digest entry stored in the database.
  * <p>
@@ -51,9 +52,10 @@ public class DigestEntry extends AbstractEntity {
 
     /**
      * Source URL from which this digest entry was extracted.
+     * This field is marked as unique to enforce its uniqueness in the database.
      * Maximum length limited to 1000 characters.
      */
-    @Column(length = 1000)
+    @Column(length = 1000, unique = true)
     private String sourceUrl;
 
     /**
@@ -63,16 +65,6 @@ public class DigestEntry extends AbstractEntity {
      */
     public Long getId() {
         return id;
-    }
-
-    /**
-     * Sets the unique identifier of this digest entry.
-     * Generally managed by JPA provider and should not be set manually.
-     *
-     * @param id the ID to set
-     */
-    public void setId(Long id) {
-        this.id = id;
     }
 
     /**

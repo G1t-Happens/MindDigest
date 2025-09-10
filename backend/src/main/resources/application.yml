@@ -2,6 +2,10 @@
 server:
   port: 8089                # Server Port
 
+# Custom API configuration
+api:
+  base-path: /api/v1         # Base path for your REST API endpoints
+
 # Spring framework related configuration
 spring:
   application:
