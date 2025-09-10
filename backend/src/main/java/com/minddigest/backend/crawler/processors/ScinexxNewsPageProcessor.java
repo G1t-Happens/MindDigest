@@ -15,17 +15,17 @@ import java.util.regex.Pattern;
 
 
 /**
- * PageProcessor implementation for crawling news articles from spektrum.de.
+ * PageProcessor implementation for crawling news articles from scinexx.de.
  * <p>
  * This processor identifies article URLs matching a specific pattern,
  * filters out premium articles, extracts relevant data such as title, content,
  * and author, and collects the results as {@link DigestEntryDto} instances.
  * </p>
  */
-@CrawlerComponent(domain = "spektrum.de")
-public class SpektrumNewsPageProcessor implements CrawlerPageProcessor {
+@CrawlerComponent(domain = "scinexx.de")
+public class ScinexxNewsPageProcessor implements CrawlerPageProcessor {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SpektrumNewsPageProcessor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScinexxNewsPageProcessor.class);
 
     /**
      * Stores the list of extracted articles as {@link DigestEntryDto}.
@@ -48,11 +48,11 @@ public class SpektrumNewsPageProcessor implements CrawlerPageProcessor {
     private Pattern articleUrlPattern;
 
     // XPath expressions for locating HTML elements within the page
-    private static final String XPATH_PREMIUM_ARTICLE = "//article[contains(@class, 'pw-premium')]";
-    private static final String XPATH_TITLE = "//span[@class='content__title']/text()";
-    private static final String XPATH_PARAGRAPHS = "//article[contains(@class, 'content') and contains(@class, 'pw-free')]//p//text()";
-    private static final String XPATH_AUTHOR_MAIN = "//div[contains(@class, 'content__author__info__name')]//a[@class='line']/text()";
-    private static final String XPATH_AUTHOR_FALLBACK = "//div[contains(@class, 'content__copyright')]//span/text()";
+    private static final String XPATH_PREMIUM_ARTICLE = "todo";
+    private static final String XPATH_TITLE = "todo";
+    private static final String XPATH_PARAGRAPHS = "todo";
+    private static final String XPATH_AUTHOR_MAIN = "todo";
+    private static final String XPATH_AUTHOR_FALLBACK = "todo";
 
     /**
      * Initializes the processor for a given domain and start URL.
@@ -61,14 +61,14 @@ public class SpektrumNewsPageProcessor implements CrawlerPageProcessor {
      * Clears previous crawl results.
      * </p>
      *
-     * @param domain   the target domain (e.g., "spektrum.de")
+     * @param domain   the target domain (e.g., "scinexx.de")
      * @param startUrl the initial URL to start crawling from
      */
     @Override
     public void init(String domain, String startUrl) {
         this.articleUrlPattern = Pattern.compile("https://www\\." + Pattern.quote(domain) + "/news/.+?/\\d+");
         this.results.clear();
-        LOGGER.info("SpektrumNewsPageProcessor initialized for domain: {} with startUrl: {}", domain, startUrl);
+        LOGGER.info("ScinexxNewsPageProcessor initialized for domain: {} with startUrl: {}", domain, startUrl);
     }
 
     /**
@@ -156,3 +156,4 @@ public class SpektrumNewsPageProcessor implements CrawlerPageProcessor {
         return results;
     }
 }
+

@@ -34,3 +34,6 @@ crawler:
     - name: Spektrum
       domain: spektrum.de
       startUrl: https://www.spektrum.de/news
+    - name: Scinexx
+      domain: scinexx.de
+      startUrl: https://www.scinexx.de/news
