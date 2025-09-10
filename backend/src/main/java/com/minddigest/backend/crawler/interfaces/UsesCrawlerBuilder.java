@@ -12,7 +12,7 @@ import java.lang.annotation.*;
  * <p>
  * Usage example:
  * <pre>
- * &#64;UsesCrawlerAdapter(WebMagicCrawlerAdapter.class)
+ * &#64;UsesCrawlerBuilder(WebMagicCrawlerAdapter.class)
  * public class MyPageProcessor implements CrawlerPageProcessor {
  *     // ...
  * }
@@ -22,7 +22,7 @@ import java.lang.annotation.*;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface UsesCrawlerAdapter {
+public @interface UsesCrawlerBuilder {
 
     /**
      * The {@link Crawler} implementation class that should be used
@@ -30,5 +30,5 @@ public @interface UsesCrawlerAdapter {
      *
      * @return the class of the crawler adapter
      */
-    Class<? extends Crawler> value();
+    Class<? extends CrawlerAdapterBuilder> value();
 }

@@ -1,7 +1,8 @@
 package com.minddigest.backend.crawler.processors;
 
+import com.minddigest.backend.crawler.WebMagicAdapterBuilder;
 import com.minddigest.backend.crawler.WebMagicCrawlerAdapter;
-import com.minddigest.backend.crawler.interfaces.UsesCrawlerAdapter;
+import com.minddigest.backend.crawler.interfaces.UsesCrawlerBuilder;
 import com.minddigest.backend.dto.DigestEntryDto;
 import com.minddigest.backend.crawler.interfaces.CrawlerComponent;
 import com.minddigest.backend.crawler.interfaces.CrawlerPageProcessor;
@@ -25,11 +26,11 @@ import java.util.regex.Pattern;
  * </p>
  * <p>
  * The processor is annotated with {@link CrawlerComponent} for domain binding,
- * and {@link UsesCrawlerAdapter} to specify usage of {@link WebMagicCrawlerAdapter}.
+ * and {@link UsesCrawlerBuilder} to specify usage of {@link WebMagicCrawlerAdapter}.
  * </p>
  */
 @CrawlerComponent(domain = "spektrum.de")
-@UsesCrawlerAdapter(WebMagicCrawlerAdapter.class)
+@UsesCrawlerBuilder(WebMagicAdapterBuilder.class)
 public class SpektrumNewsPageProcessor implements CrawlerPageProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpektrumNewsPageProcessor.class);

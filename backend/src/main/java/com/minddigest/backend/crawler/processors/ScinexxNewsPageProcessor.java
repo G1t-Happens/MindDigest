@@ -1,7 +1,8 @@
 package com.minddigest.backend.crawler.processors;
 
+import com.minddigest.backend.crawler.WebMagicAdapterBuilder;
 import com.minddigest.backend.crawler.WebMagicCrawlerAdapter;
-import com.minddigest.backend.crawler.interfaces.UsesCrawlerAdapter;
+import com.minddigest.backend.crawler.interfaces.UsesCrawlerBuilder;
 import com.minddigest.backend.dto.DigestEntryDto;
 import com.minddigest.backend.crawler.interfaces.CrawlerComponent;
 import com.minddigest.backend.crawler.interfaces.CrawlerPageProcessor;
@@ -25,11 +26,11 @@ import java.util.regex.Pattern;
  * </p>
  * <p>
  * The class is annotated with {@link CrawlerComponent} to bind it to the <code>scinexx.de</code> domain,
- * and with {@link UsesCrawlerAdapter} to specify {@link WebMagicCrawlerAdapter} as the crawler adapter.
+ * and with {@link UsesCrawlerBuilder} to specify {@link WebMagicCrawlerAdapter} as the crawler adapter.
  * </p>
  */
 @CrawlerComponent(domain = "scinexx.de")
-@UsesCrawlerAdapter(WebMagicCrawlerAdapter.class)
+@UsesCrawlerBuilder(WebMagicAdapterBuilder.class)
 public class ScinexxNewsPageProcessor implements CrawlerPageProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ScinexxNewsPageProcessor.class);
