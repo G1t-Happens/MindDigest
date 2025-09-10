@@ -9,6 +9,7 @@ import org.springframework.validation.annotation.Validated;
 
 import java.util.List;
 
+
 @Component
 @ConfigurationProperties(prefix = "crawler")
 @Validated
@@ -20,11 +21,21 @@ public class CrawlerProperties {
     @Min(1)
     private Integer threads = 4;
 
-    public List<Site> getSites() { return sites; }
-    public void setSites(List<Site> sites) { this.sites = sites; }
+    public List<Site> getSites() {
+        return sites;
+    }
 
-    public Integer getThreads() { return threads; }
-    public void setThreads(Integer threads) { this.threads = threads; }
+    public void setSites(List<Site> sites) {
+        this.sites = sites;
+    }
+
+    public Integer getThreads() {
+        return threads;
+    }
+
+    public void setThreads(Integer threads) {
+        this.threads = threads;
+    }
 
     public static class Site {
         @NotBlank
@@ -37,13 +48,28 @@ public class CrawlerProperties {
         @URL
         private String startUrl;
 
-        public String getName() { return name; }
-        public void setName(String name) { this.name = name; }
+        public String getName() {
+            return name;
+        }
 
-        public String getDomain() { return domain; }
-        public void setDomain(String domain) { this.domain = domain; }
+        public void setName(String name) {
+            this.name = name;
+        }
 
-        public String getStartUrl() { return startUrl; }
-        public void setStartUrl(String startUrl) { this.startUrl = startUrl; }
+        public String getDomain() {
+            return domain;
+        }
+
+        public void setDomain(String domain) {
+            this.domain = domain;
+        }
+
+        public String getStartUrl() {
+            return startUrl;
+        }
+
+        public void setStartUrl(String startUrl) {
+            this.startUrl = startUrl;
+        }
     }
 }

@@ -1,4 +1,4 @@
-package com.minddigest.backend.crawler;
+package com.minddigest.backend.crawler.adapters.webmagic;
 
 import com.minddigest.backend.crawler.interfaces.Crawler;
 import com.minddigest.backend.crawler.interfaces.CrawlerPageProcessor;

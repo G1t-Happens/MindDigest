@@ -1,6 +1,7 @@
 package com.minddigest.backend.crawler;
 
 import com.minddigest.backend.config.CrawlerProperties;
+import com.minddigest.backend.crawler.interfaces.Crawler;
 import com.minddigest.backend.crawler.interfaces.CrawlerRegistry;
 import com.minddigest.backend.dto.DigestEntryDto;
 import org.slf4j.Logger;
@@ -49,27 +50,23 @@ public class CrawlerCoordinator {
     }
 
     /**
-     * Starts crawlers concurrently for all configured sites and collects their results.
+     * Starts crawling processes for all configured sites concurrently.
      * <p>
-     * Each site triggers retrieval of the matching crawler which is then initialized and executed.
-     * Results from all crawlers are aggregated into a single list.
-     * </p>
+     * For each site defined in {@code crawlerProperties}, this method gets the appropriate crawler
+     * from the {@code crawlerRegistry}, initializes it with the domain and start URL, and then executes the crawl.
+     * The crawling tasks run in parallel using the configured {@code executorService}.
+     * <p>
+     * If any crawler is not found for a domain, an {@link IllegalArgumentException} is thrown.
+     * Interrupted exceptions during the execution of tasks are properly handled by
+     * interrupting the current thread and logging the error.
+     * <p>
+     * All results from the crawlers are collected and returned as a combined list of {@link DigestEntryDto}.
      *
-     * @return list of all collected {@link DigestEntryDto} from all crawlers
-     * @throws IllegalArgumentException if no crawler is found for a configured domain
+     * @return a combined list of all crawl results from all sites
+     * @throws IllegalArgumentException if a crawler cannot be found for any configured domain
      */
     public List<DigestEntryDto> startAllCrawlers() {
-        List<Callable<List<DigestEntryDto>>> tasks = new ArrayList<>();
-        for (var site : crawlerProperties.getSites()) {
-            tasks.add(() -> crawlerRegistry.getCrawlerForDomain(site.getDomain())
-                    .map(crawler -> {
-                        LOGGER.info("[COORDINATOR] Starting crawler for domain {}", site.getDomain());
-                        crawler.init(site.getDomain(), site.getStartUrl());
-                        return crawler.crawl();
-                    })
-                    .orElseThrow(() -> new IllegalArgumentException("No crawler found for domain: " + site.getDomain()))
-            );
-        }
+        List<Callable<List<DigestEntryDto>>> tasks = createCrawlerTasks();
 
         List<DigestEntryDto> allResults = new ArrayList<>();
         try {
@@ -84,6 +81,38 @@ public class CrawlerCoordinator {
 
         LOGGER.info("[COORDINATOR] Finished all crawlers. Total results: {}", allResults.size());
         return allResults;
+    }
+
+    /**
+     * Creates a list of {@link Callable} tasks, each responsible for running
+     * the crawl process on a specific site.
+     * <p>
+     * Each task:
+     * <ul>
+     *   <li>Retrieves the {@link Crawler} instance for the site's domain from {@code crawlerRegistry}.</li>
+     *   <li>Initializes the crawler with the domain and start URL.</li>
+     *   <li>Executes the crawl and returns the list of {@link DigestEntryDto} results.</li>
+     * </ul>
+     * <p>
+     * If no crawler is found for a domain, the task will throw an {@link IllegalArgumentException}
+     * when executed.
+     *
+     * @return a list of callable tasks to be executed concurrently for all configured sites
+     * @throws IllegalArgumentException if a crawler cannot be found for any configured domain when tasks are executed
+     */
+    private List<Callable<List<DigestEntryDto>>> createCrawlerTasks() {
+        List<Callable<List<DigestEntryDto>>> tasks = new ArrayList<>();
+        for (var site : crawlerProperties.getSites()) {
+            tasks.add(() -> crawlerRegistry.getCrawlerForDomain(site.getDomain())
+                    .map(crawler -> {
+                        LOGGER.info("[COORDINATOR] Starting crawler for domain {}", site.getDomain());
+                        crawler.init(site.getDomain(), site.getStartUrl());
+                        return crawler.crawl();
+                    })
+                    .orElseThrow(() -> new IllegalArgumentException("No crawler found for domain: " + site.getDomain()))
+            );
+        }
+        return tasks;
     }
 
     /**

@@ -1,8 +1,7 @@
 package com.minddigest.backend.crawler.processors;
 
-import com.minddigest.backend.crawler.WebMagicAdapterBuilder;
-import com.minddigest.backend.crawler.WebMagicCrawlerAdapter;
-import com.minddigest.backend.crawler.interfaces.UsesCrawlerBuilder;
+import com.minddigest.backend.crawler.adapters.webmagic.WebMagicCrawlerAdapter;
+import com.minddigest.backend.crawler.interfaces.UsesCrawlerAdapter;
 import com.minddigest.backend.dto.DigestEntryDto;
 import com.minddigest.backend.crawler.interfaces.CrawlerComponent;
 import com.minddigest.backend.crawler.interfaces.CrawlerPageProcessor;
@@ -26,11 +25,11 @@ import java.util.regex.Pattern;
  * </p>
  * <p>
  * The class is annotated with {@link CrawlerComponent} to bind it to the <code>scinexx.de</code> domain,
- * and with {@link UsesCrawlerBuilder} to specify {@link WebMagicCrawlerAdapter} as the crawler adapter.
+ * and with {@link UsesCrawlerAdapter} to specify {@link WebMagicCrawlerAdapter} as the crawler adapter.
  * </p>
  */
 @CrawlerComponent(domain = "scinexx.de")
-@UsesCrawlerBuilder(WebMagicAdapterBuilder.class)
+@UsesCrawlerAdapter("webMagicAdapter")
 public class ScinexxNewsPageProcessor implements CrawlerPageProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ScinexxNewsPageProcessor.class);
@@ -112,6 +111,7 @@ public class ScinexxNewsPageProcessor implements CrawlerPageProcessor {
 
         if (isPremium) {
             LOGGER.debug("Skipping premium article: {}", url);
+            // Mark this page to be skipped from further processing and storage, effectively excluding it from the crawl results.
             page.setSkip(true);
             return;
         }
@@ -130,6 +130,7 @@ public class ScinexxNewsPageProcessor implements CrawlerPageProcessor {
         // Skip if essential data is missing
         if (!StringUtils.hasText(title) || content.isEmpty()) {
             LOGGER.warn("Skipping page due to missing title or content: {}", url);
+            // Mark this page to be skipped from further processing and storage, effectively excluding it from the crawl results.
             page.setSkip(true);
             return;
         }

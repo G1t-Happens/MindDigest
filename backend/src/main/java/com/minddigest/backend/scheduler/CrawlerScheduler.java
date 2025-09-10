@@ -39,7 +39,7 @@ public class CrawlerScheduler {
      * Invokes the crawler coordinator to start all configured crawlers and logs the total results.
      * </p>
      */
-    @Scheduled(cron = "0 * * * * *")
+    @Scheduled(cron = "0 0 * * * *")
     public void runCrawlerHourly() {
         LOGGER.info("[SCHEDULER] Starting scheduled crawler job");
         List<DigestEntryDto> results = crawlerCoordinator.startAllCrawlers();

@@ -2,6 +2,7 @@ package com.minddigest.backend.crawler.interfaces;
 
 import java.util.Optional;
 
+
 /**
  * Registry interface for managing crawler instances mapped to specific domains.
  * <p>

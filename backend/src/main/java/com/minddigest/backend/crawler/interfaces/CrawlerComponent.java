@@ -4,6 +4,7 @@ import org.springframework.stereotype.Component;
 
 import java.lang.annotation.*;
 
+
 /**
  * Annotation to mark a class as a crawler page processor for a specific domain.
  * <p>
