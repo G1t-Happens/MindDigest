@@ -1,5 +1,7 @@
 package com.minddigest.backend.crawler.processors;
 
+import com.minddigest.backend.crawler.WebMagicCrawlerAdapter;
+import com.minddigest.backend.crawler.interfaces.UsesCrawlerAdapter;
 import com.minddigest.backend.dto.DigestEntryDto;
 import com.minddigest.backend.crawler.interfaces.CrawlerComponent;
 import com.minddigest.backend.crawler.interfaces.CrawlerPageProcessor;
@@ -15,25 +17,30 @@ import java.util.regex.Pattern;
 
 
 /**
- * PageProcessor implementation for crawling news articles from spektrum.de.
+ * {@link CrawlerPageProcessor} implementation for crawling news articles from <code>spektrum.de</code>.
  * <p>
- * This processor identifies article URLs matching a specific pattern,
- * filters out premium articles, extracts relevant data such as title, content,
- * and author, and collects the results as {@link DigestEntryDto} instances.
+ * This processor is designed to identify article URLs matching a specific regex pattern,
+ * skip premium content identified by a CSS class, extract key article data such as title,
+ * content paragraphs, and author, and collect these as {@link DigestEntryDto} instances.
+ * </p>
+ * <p>
+ * The processor is annotated with {@link CrawlerComponent} for domain binding,
+ * and {@link UsesCrawlerAdapter} to specify usage of {@link WebMagicCrawlerAdapter}.
  * </p>
  */
 @CrawlerComponent(domain = "spektrum.de")
+@UsesCrawlerAdapter(WebMagicCrawlerAdapter.class)
 public class SpektrumNewsPageProcessor implements CrawlerPageProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SpektrumNewsPageProcessor.class);
 
     /**
-     * Stores the list of extracted articles as {@link DigestEntryDto}.
+     * Holds the list of extracted article data as {@link DigestEntryDto}.
      */
     private final List<DigestEntryDto> results = new ArrayList<>();
 
     /**
-     * WebMagic {@link Site} configuration with retries, timeouts, charset, and user-agent.
+     * WebMagic {@link Site} configuration including retry settings, timeout, charset, and user-agent string.
      */
     private final Site site = Site.me()
             .setRetryTimes(3)
@@ -43,11 +50,11 @@ public class SpektrumNewsPageProcessor implements CrawlerPageProcessor {
             .setUserAgent("Mozilla/5.0 (compatible; MindDigestBot/1.0)");
 
     /**
-     * Regex pattern to identify valid article URLs for the target domain.
+     * Regex pattern to recognize valid article URLs within the spektrum.de domain.
      */
     private Pattern articleUrlPattern;
 
-    // XPath expressions for locating HTML elements within the page
+    // XPath expressions for parsing different elements within the HTML pages
     private static final String XPATH_PREMIUM_ARTICLE = "//article[contains(@class, 'pw-premium')]";
     private static final String XPATH_TITLE = "//span[@class='content__title']/text()";
     private static final String XPATH_PARAGRAPHS = "//article[contains(@class, 'content') and contains(@class, 'pw-free')]//p//text()";
@@ -55,14 +62,14 @@ public class SpektrumNewsPageProcessor implements CrawlerPageProcessor {
     private static final String XPATH_AUTHOR_FALLBACK = "//div[contains(@class, 'content__copyright')]//span/text()";
 
     /**
-     * Initializes the processor for a given domain and start URL.
+     * Initializes the processor for the specified domain and start URL.
      * <p>
-     * Compiles the regex pattern for article URLs based on the domain.
-     * Clears previous crawl results.
+     * This method compiles a regex pattern for detecting article URLs based on the domain,
+     * and clears any previously collected results to prepare for a fresh crawl.
      * </p>
      *
-     * @param domain   the target domain (e.g., "spektrum.de")
-     * @param startUrl the initial URL to start crawling from
+     * @param domain   the domain this processor is associated with (e.g., "spektrum.de")
+     * @param startUrl the initial URL to begin crawling from
      */
     @Override
     public void init(String domain, String startUrl) {
@@ -72,21 +79,22 @@ public class SpektrumNewsPageProcessor implements CrawlerPageProcessor {
     }
 
     /**
-     * Processes a single web page:
+     * Processes an individual {@link Page} during crawling.
      * <ul>
-     *   <li>If the URL is not an article, extracts and queues all matching article links.</li>
-     *   <li>If the article is premium, skips it.</li>
-     *   <li>Otherwise, extracts the title, content paragraphs, and author information.</li>
-     *   <li>Adds valid articles as {@link DigestEntryDto} to the results list.</li>
+     *   <li>If the current URL does not match the article pattern, extracts all matching article links and queues them for crawling.</li>
+     *   <li>Detects and skips premium articles by checking the configured XPath.</li>
+     *   <li>Extracts title, content paragraphs, and author information from valid articles.</li>
+     *   <li>Skips pages missing mandatory content.</li>
+     *   <li>Creates and stores {@link DigestEntryDto} objects for successfully extracted articles.</li>
      * </ul>
      *
-     * @param page the {@link Page} to process
+     * @param page the web page to process
      */
     @Override
     public void process(Page page) {
         String url = page.getUrl().toString();
 
-        // If the URL is not a target article, queue all matching links found on the page
+        // If current URL does not match article pattern, queue all matching links on the page
         if (!articleUrlPattern.matcher(url).matches()) {
             List<String> links = page.getHtml().links()
                     .regex(articleUrlPattern.pattern())
@@ -96,7 +104,7 @@ public class SpektrumNewsPageProcessor implements CrawlerPageProcessor {
             return;
         }
 
-        // Skip premium articles
+        // Check for premium articles and skip them
         boolean isPremium = page.getHtml()
                 .xpath(XPATH_PREMIUM_ARTICLE)
                 .match();
@@ -107,25 +115,25 @@ public class SpektrumNewsPageProcessor implements CrawlerPageProcessor {
             return;
         }
 
-        // Extract article details
+        // Extract article title, paragraphs, and author information
         String title = page.getHtml().xpath(XPATH_TITLE).toString();
         List<String> paragraphs = page.getHtml().xpath(XPATH_PARAGRAPHS).all();
         String content = String.join("\n", paragraphs).trim();
 
-        // Try main author extraction, fallback if empty
+        // Extract author with fallback
         String author = page.getHtml().xpath(XPATH_AUTHOR_MAIN).toString();
         if (!StringUtils.hasText(author)) {
             author = page.getHtml().xpath(XPATH_AUTHOR_FALLBACK).toString();
         }
 
-        // Skip if mandatory fields missing
+        // Validate mandatory fields
         if (!StringUtils.hasText(title) || content.isEmpty()) {
             LOGGER.warn("Skipping page due to missing title or content: {}", url);
             page.setSkip(true);
             return;
         }
 
-        // Build and store result DTO
+        // Build the result object and add to results list
         DigestEntryDto entry = new DigestEntryDto();
         entry.setTitle(title);
         entry.setSummary(content);
@@ -137,9 +145,9 @@ public class SpektrumNewsPageProcessor implements CrawlerPageProcessor {
     }
 
     /**
-     * Returns the configured {@link Site} for crawling.
+     * Returns the configured {@link Site} instance used for crawling.
      *
-     * @return the configured Site instance
+     * @return the {@link Site} configuration
      */
     @Override
     public Site getSite() {
@@ -147,9 +155,9 @@ public class SpektrumNewsPageProcessor implements CrawlerPageProcessor {
     }
 
     /**
-     * Returns the list of extracted {@link DigestEntryDto} results.
+     * Retrieves the list of extracted {@link DigestEntryDto} articles.
      *
-     * @return list of collected digest entries
+     * @return a list of collected digest entries
      */
     @Override
     public List<DigestEntryDto> getResults() {

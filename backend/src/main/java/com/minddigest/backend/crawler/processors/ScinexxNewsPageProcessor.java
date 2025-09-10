@@ -1,5 +1,7 @@
 package com.minddigest.backend.crawler.processors;
 
+import com.minddigest.backend.crawler.WebMagicCrawlerAdapter;
+import com.minddigest.backend.crawler.interfaces.UsesCrawlerAdapter;
 import com.minddigest.backend.dto.DigestEntryDto;
 import com.minddigest.backend.crawler.interfaces.CrawlerComponent;
 import com.minddigest.backend.crawler.interfaces.CrawlerPageProcessor;
@@ -15,25 +17,30 @@ import java.util.regex.Pattern;
 
 
 /**
- * PageProcessor implementation for crawling news articles from scinexx.de.
+ * {@link CrawlerPageProcessor} implementation for crawling news articles from <code>scinexx.de</code>.
  * <p>
- * This processor identifies article URLs matching a specific pattern,
- * filters out premium articles, extracts relevant data such as title, content,
- * and author, and collects the results as {@link DigestEntryDto} instances.
+ * This processor is responsible for identifying valid article URLs matching a defined pattern,
+ * filtering out premium content, extracting relevant fields such as title, content paragraphs, and author,
+ * and collecting the extracted data as {@link DigestEntryDto} instances.
+ * </p>
+ * <p>
+ * The class is annotated with {@link CrawlerComponent} to bind it to the <code>scinexx.de</code> domain,
+ * and with {@link UsesCrawlerAdapter} to specify {@link WebMagicCrawlerAdapter} as the crawler adapter.
  * </p>
  */
 @CrawlerComponent(domain = "scinexx.de")
+@UsesCrawlerAdapter(WebMagicCrawlerAdapter.class)
 public class ScinexxNewsPageProcessor implements CrawlerPageProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ScinexxNewsPageProcessor.class);
 
     /**
-     * Stores the list of extracted articles as {@link DigestEntryDto}.
+     * List that stores all extracted articles as {@link DigestEntryDto} objects.
      */
     private final List<DigestEntryDto> results = new ArrayList<>();
 
     /**
-     * WebMagic {@link Site} configuration with retries, timeouts, charset, and user-agent.
+     * Configuration for the web crawling site including retry policy, timeouts, charset, and user-agent.
      */
     private final Site site = Site.me()
             .setRetryTimes(3)
@@ -43,11 +50,11 @@ public class ScinexxNewsPageProcessor implements CrawlerPageProcessor {
             .setUserAgent("Mozilla/5.0 (compatible; MindDigestBot/1.0)");
 
     /**
-     * Regex pattern to identify valid article URLs for the target domain.
+     * Compiled regex pattern used to identify valid article URLs within the target domain.
      */
     private Pattern articleUrlPattern;
 
-    // XPath expressions for locating HTML elements within the page
+    // TODO: Define actual XPath expressions for locating HTML elements inside the crawled pages.
     private static final String XPATH_PREMIUM_ARTICLE = "todo";
     private static final String XPATH_TITLE = "todo";
     private static final String XPATH_PARAGRAPHS = "todo";
@@ -55,14 +62,14 @@ public class ScinexxNewsPageProcessor implements CrawlerPageProcessor {
     private static final String XPATH_AUTHOR_FALLBACK = "todo";
 
     /**
-     * Initializes the processor for a given domain and start URL.
+     * Initializes the page processor for the specified domain and start URL.
      * <p>
-     * Compiles the regex pattern for article URLs based on the domain.
-     * Clears previous crawl results.
+     * This method compiles the article URL pattern based on the domain and clears any previously
+     * stored results to prepare for a new crawl session.
      * </p>
      *
-     * @param domain   the target domain (e.g., "scinexx.de")
-     * @param startUrl the initial URL to start crawling from
+     * @param domain   the domain this processor will crawl, e.g. <code>scinexx.de</code>
+     * @param startUrl the initial URL from which crawling begins
      */
     @Override
     public void init(String domain, String startUrl) {
@@ -72,21 +79,22 @@ public class ScinexxNewsPageProcessor implements CrawlerPageProcessor {
     }
 
     /**
-     * Processes a single web page:
+     * Processes a single crawled {@link Page}.
      * <ul>
-     *   <li>If the URL is not an article, extracts and queues all matching article links.</li>
-     *   <li>If the article is premium, skips it.</li>
-     *   <li>Otherwise, extracts the title, content paragraphs, and author information.</li>
-     *   <li>Adds valid articles as {@link DigestEntryDto} to the results list.</li>
+     *     <li>If the URL does not match an article pattern, all matching links are extracted and queued for crawling.</li>
+     *     <li>Premium articles are detected via XPath and skipped.</li>
+     *     <li>For valid articles, the title, content paragraphs, and author are extracted.</li>
+     *     <li>Articles with missing mandatory fields are skipped.</li>
+     *     <li>Successfully extracted articles are converted into {@link DigestEntryDto} objects and stored.</li>
      * </ul>
      *
-     * @param page the {@link Page} to process
+     * @param page the {@link Page} object representing the crawled web page to process
      */
     @Override
     public void process(Page page) {
         String url = page.getUrl().toString();
 
-        // If the URL is not a target article, queue all matching links found on the page
+        // Queue article links if the URL is not itself a target article
         if (!articleUrlPattern.matcher(url).matches()) {
             List<String> links = page.getHtml().links()
                     .regex(articleUrlPattern.pattern())
@@ -96,7 +104,7 @@ public class ScinexxNewsPageProcessor implements CrawlerPageProcessor {
             return;
         }
 
-        // Skip premium articles
+        // Detect and skip premium articles
         boolean isPremium = page.getHtml()
                 .xpath(XPATH_PREMIUM_ARTICLE)
                 .match();
@@ -107,25 +115,25 @@ public class ScinexxNewsPageProcessor implements CrawlerPageProcessor {
             return;
         }
 
-        // Extract article details
+        // Extract article data
         String title = page.getHtml().xpath(XPATH_TITLE).toString();
         List<String> paragraphs = page.getHtml().xpath(XPATH_PARAGRAPHS).all();
         String content = String.join("\n", paragraphs).trim();
 
-        // Try main author extraction, fallback if empty
+        // Attempt to extract author information, fallback if primary XPath is empty
         String author = page.getHtml().xpath(XPATH_AUTHOR_MAIN).toString();
         if (!StringUtils.hasText(author)) {
             author = page.getHtml().xpath(XPATH_AUTHOR_FALLBACK).toString();
         }
 
-        // Skip if mandatory fields missing
+        // Skip if essential data is missing
         if (!StringUtils.hasText(title) || content.isEmpty()) {
             LOGGER.warn("Skipping page due to missing title or content: {}", url);
             page.setSkip(true);
             return;
         }
 
-        // Build and store result DTO
+        // Build and store the digest entry
         DigestEntryDto entry = new DigestEntryDto();
         entry.setTitle(title);
         entry.setSummary(content);
@@ -137,9 +145,9 @@ public class ScinexxNewsPageProcessor implements CrawlerPageProcessor {
     }
 
     /**
-     * Returns the configured {@link Site} for crawling.
+     * Returns the configured {@link Site} instance for this processor.
      *
-     * @return the configured Site instance
+     * @return the configured {@link Site} used during crawling
      */
     @Override
     public Site getSite() {
@@ -147,13 +155,12 @@ public class ScinexxNewsPageProcessor implements CrawlerPageProcessor {
     }
 
     /**
-     * Returns the list of extracted {@link DigestEntryDto} results.
+     * Retrieves the list of extracted article results.
      *
-     * @return list of collected digest entries
+     * @return a list of {@link DigestEntryDto} representing the extracted articles
      */
     @Override
     public List<DigestEntryDto> getResults() {
         return results;
     }
 }
-

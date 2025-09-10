@@ -10,17 +10,38 @@ import us.codecraft.webmagic.Spider;
 import java.util.List;
 
 
+/**
+ * Adapter class that integrates a {@link CrawlerPageProcessor} with the WebMagic framework.
+ * <p>
+ * Manages initialization and execution of the crawl process using WebMagic's {@link Spider}.
+ * Supports configurable thread count for concurrent crawling.
+ * </p>
+ */
 public class WebMagicCrawlerAdapter implements Crawler {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebMagicCrawlerAdapter.class);
 
+    /**
+     * The page processor used to process and extract data during crawling.
+     */
     private final CrawlerPageProcessor processor;
 
+    /**
+     * Number of threads to use for the crawl.
+     */
     private final int threadCount;
 
+    /**
+     * Starting URL for the crawl.
+     */
     private String startUrl;
 
-
+    /**
+     * Constructs the adapter with the given processor and thread count.
+     *
+     * @param processor   the page processor to delegate crawling tasks
+     * @param threadCount the number of threads to run concurrently
+     */
     public WebMagicCrawlerAdapter(CrawlerPageProcessor processor, int threadCount) {
         this.processor = processor;
         this.threadCount = threadCount;

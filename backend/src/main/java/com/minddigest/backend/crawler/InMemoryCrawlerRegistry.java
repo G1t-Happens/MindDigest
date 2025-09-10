@@ -12,13 +12,22 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 
+/**
+ * Thread-safe in-memory registry for managing crawlers keyed by domain name.
+ * <p>
+ * Provides lookup and registration of {@link Crawler} instances by normalized domain strings.
+ * Domains are normalized by trimming and converting to lowercase using {@link Locale#ROOT}.
+ * </p>
+ */
 @Component
 public class InMemoryCrawlerRegistry implements CrawlerRegistry {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(InMemoryCrawlerRegistry.class);
 
+    /**
+     * Internal map storing crawlers indexed by normalized domain keys.
+     */
     private final Map<String, Crawler> crawlersByDomain = new ConcurrentHashMap<>();
-
 
     @Override
     public Optional<Crawler> getCrawlerForDomain(String domain) {
@@ -36,6 +45,12 @@ public class InMemoryCrawlerRegistry implements CrawlerRegistry {
         LOGGER.info("[REGISTRY] Registered crawler for domain: {}", normalized);
     }
 
+    /**
+     * Normalizes a domain string by trimming whitespace and converting to lower case.
+     *
+     * @param domain the raw domain string
+     * @return normalized domain string suitable for consistent lookup
+     */
     private String normalizeDomain(String domain) {
         return domain.trim().toLowerCase(Locale.ROOT);
     }
