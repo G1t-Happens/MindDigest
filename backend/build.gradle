@@ -10,7 +10,7 @@ description = 'AI-powered backend that automatically crawls news and research we
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
 
