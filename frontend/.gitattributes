@@ -1,1 +1,29 @@
+# Set all text files to have LF line endings
 * text=auto eol=lf
+
+# Vue single-file components
+*.vue text eol=lf
+
+# TypeScript and JavaScript files
+*.ts text eol=lf
+*.js text eol=lf
+
+# JSON files
+*.json text eol=lf
+
+# Stylesheets
+*.css text eol=lf
+*.scss text eol=lf
+
+# HTML files
+*.html text eol=lf
+
+# Shell scripts use LF line endings explicitly (optional)
+*.sh text eol=lf
+
+# Binary files should not be modified
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
